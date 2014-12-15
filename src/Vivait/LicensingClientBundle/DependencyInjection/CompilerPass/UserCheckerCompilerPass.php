@@ -17,6 +17,6 @@ class UserCheckerCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $container->getDefinition("security.user_checker")->addArgument('%vivait.vivadesk.tenant.licensekey%')->setClass('Vivait\LicensingBundle\LicensingUserChecker');
+        $container->getDefinition("security.user_checker")->addArgument('%vivait.vivadesk.tenant.licensekey%')->setClass('Vivait\LicensingClientBundle\LicensingUserChecker');
     }
 }
