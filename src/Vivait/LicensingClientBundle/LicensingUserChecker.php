@@ -15,19 +15,23 @@ class LicensingUserChecker implements UserCheckerInterface
     private $license;
     private $licenseKey;
 
+    private $environment;
+
     private $guzzle;
 
     /**
      * Constructor
      *
      * @param $licenseKey
+     * @param $environment
      * @internal param SecurityContext $securityContext
      * @internal param Doctrine $doctrine
      */
-    public function __construct($licenseKey)
+    public function __construct($licenseKey, $environment)
     {
-        $this->licenseKey = $licenseKey;
-        $this->guzzle     = new Guzzle(
+        $this->environment = $environment;
+        $this->licenseKey  = $licenseKey;
+        $this->guzzle      = new Guzzle(
             [
                 'base_url' => 'http://licensing.dev/api/',
                 'defaults' => [
@@ -66,6 +70,9 @@ class LicensingUserChecker implements UserCheckerInterface
      */
     public function checkPostAuth(UserInterface $user)
     {
+        if(in_array($this->environment, array('test', 'dev')))
+            return;
+
         try {
             /** @noinspection PhpVoidFunctionResultUsedInspection */
             $response = $this->guzzle->get('licenses/' . $this->licenseKey);
