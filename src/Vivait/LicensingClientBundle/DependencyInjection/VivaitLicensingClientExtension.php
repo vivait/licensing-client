@@ -22,6 +22,6 @@ class VivaitLicensingClientExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('vivait.vivadesk.tenant.licensekey', $configs[0]['licensekey']);
+        $container->setParameter('vivait.licensingclient.licensekey', $configs[0]['licensekey']);
     }
 }
