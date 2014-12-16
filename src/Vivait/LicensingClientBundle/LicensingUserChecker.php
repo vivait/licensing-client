@@ -3,11 +3,10 @@
 namespace Vivait\LicensingClientBundle;
 
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
-use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\SecurityContext;
 use \GuzzleHttp\Client as Guzzle;
+use GuzzleHttp\Subscriber\Cache\CacheSubscriber;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 
 class LicensingUserChecker implements UserCheckerInterface
@@ -41,6 +40,8 @@ class LicensingUserChecker implements UserCheckerInterface
                 ]
             ]
         );
+
+        CacheSubscriber::attach($this->guzzle);
     }
 
     private function isLicenseValid()
