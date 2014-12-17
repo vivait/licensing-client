@@ -20,6 +20,7 @@ class UserCheckerCompilerPass implements CompilerPassInterface
         $container->getDefinition("security.user_checker")
             ->addArgument('%vivait.licensingclient.licensekey%')
             ->addArgument('%kernel.environment%')
+            ->addArgument("%kernel.cache_dir%")
             ->setClass('Vivait\LicensingClientBundle\LicensingUserChecker');
     }
 }

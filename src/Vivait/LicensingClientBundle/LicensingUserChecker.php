@@ -2,12 +2,14 @@
 
 namespace Vivait\LicensingClientBundle;
 
+use Doctrine\Common\Cache\FilesystemCache;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Subscriber\Cache\CacheStorage;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use \GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Subscriber\Cache\CacheSubscriber;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
 
 class LicensingUserChecker implements UserCheckerInterface
 {
@@ -23,10 +25,11 @@ class LicensingUserChecker implements UserCheckerInterface
      *
      * @param $licenseKey
      * @param $environment
+     * @param $cacheDirectory
      * @internal param SecurityContext $securityContext
      * @internal param Doctrine $doctrine
      */
-    public function __construct($licenseKey, $environment)
+    public function __construct($licenseKey, $environment, $cacheDirectory)
     {
         $this->environment = $environment;
         $this->licenseKey  = $licenseKey;
@@ -41,7 +44,9 @@ class LicensingUserChecker implements UserCheckerInterface
             ]
         );
 
-        CacheSubscriber::attach($this->guzzle);
+        CacheSubscriber::attach($this->guzzle, [
+            'storage' => new CacheStorage(new FilesystemCache($cacheDirectory . '/licensing/'))
+        ]);
     }
 
     private function isLicenseValid()
@@ -77,15 +82,19 @@ class LicensingUserChecker implements UserCheckerInterface
         try {
             /** @noinspection PhpVoidFunctionResultUsedInspection */
             $response = $this->guzzle->get('licenses/' . $this->licenseKey);
+        } catch(ClientException $e) {
+            $response = $e->getResponse();
+
+            if($response->getStatusCode() == 404)
+                $this->stopLogon("Invalid license key");
+            else
+                $this->stopLogon($e->getMessage());
         } catch(\Exception $e) {
             $this->stopLogon($e->getMessage());
             return;
         }
 
-        $body = $response->getBody()->getContents();
-
-        $decoder = new JsonDecode(true);
-        $this->license = $decoder->decode($body, null);
+        $this->license = $response->json();
 
         if(!$this->isLicenseValid())
             $this->stopLogon();

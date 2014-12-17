@@ -19,9 +19,6 @@ class VivaitLicensingClientExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
-
         $container->setParameter('vivait.licensingclient.licensekey', $configs[0]['licensekey']);
     }
 }
