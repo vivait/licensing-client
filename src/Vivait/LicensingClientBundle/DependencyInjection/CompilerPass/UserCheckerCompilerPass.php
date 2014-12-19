@@ -4,6 +4,7 @@ namespace Vivait\LicensingClientBundle\DependencyInjection\CompilerPass;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
 
 class UserCheckerCompilerPass implements CompilerPassInterface
 {
@@ -18,9 +19,7 @@ class UserCheckerCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         $container->getDefinition("security.user_checker")
-            ->addArgument('%vivait.licensingclient.licensekey%')
-            ->addArgument('%kernel.environment%')
-            ->addArgument("%kernel.cache_dir%")
+            ->addArgument(new Reference("licensingclient.controller"))
             ->setClass('Vivait\LicensingClientBundle\LicensingUserChecker');
     }
 }

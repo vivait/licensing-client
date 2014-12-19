@@ -2,56 +2,23 @@
 
 namespace Vivait\LicensingClientBundle;
 
-use Doctrine\Common\Cache\FilesystemCache;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Subscriber\Cache\CacheStorage;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use \GuzzleHttp\Client as Guzzle;
-use GuzzleHttp\Subscriber\Cache\CacheSubscriber;
+use Vivait\LicensingClientBundle\Controller\LicenseController;
 
 class LicensingUserChecker implements UserCheckerInterface
 {
-    private $license;
-    private $licenseKey;
-
-    private $environment;
-
-    private $guzzle;
+    private $controller;
 
     /**
      * Constructor
      *
-     * @param $licenseKey
-     * @param $environment
-     * @param $cacheDirectory
-     * @internal param SecurityContext $securityContext
-     * @internal param Doctrine $doctrine
+     * @param LicenseController $licensingClientController
      */
-    public function __construct($licenseKey, $environment, $cacheDirectory)
+    public function __construct(LicenseController $licensingClientController)
     {
-        $this->environment = $environment;
-        $this->licenseKey  = $licenseKey;
-        $this->guzzle      = new Guzzle(
-            [
-                'base_url' => 'http://licensing.dev/api/',
-                'defaults' => [
-                    'headers' => [
-                        'api-key' => '9kmMhL5Cz68nwUUZoFWV'
-                    ]
-                ]
-            ]
-        );
-
-        CacheSubscriber::attach($this->guzzle, [
-            'storage' => new CacheStorage(new FilesystemCache($cacheDirectory . '/licensing/'))
-        ]);
-    }
-
-    private function isLicenseValid()
-    {
-        return $this->license['status'] == "active";
+        $this->controller = $licensingClientController;
     }
 
     private function stopLogon($errorMessage = "Inactive license")
@@ -76,27 +43,9 @@ class LicensingUserChecker implements UserCheckerInterface
      */
     public function checkPostAuth(UserInterface $user)
     {
-        if(in_array($this->environment, array('test', 'dev')))
-            return;
+        $this->controller->sendLicenseRequest();
 
-        try {
-            /** @noinspection PhpVoidFunctionResultUsedInspection */
-            $response = $this->guzzle->get('licenses/' . $this->licenseKey);
-        } catch(ClientException $e) {
-            $response = $e->getResponse();
-
-            if($response->getStatusCode() == 404)
-                $this->stopLogon("Invalid license key");
-            else
-                $this->stopLogon($e->getMessage());
-        } catch(\Exception $e) {
-            $this->stopLogon($e->getMessage());
-            return;
-        }
-
-        $this->license = $response->json();
-
-        if(!$this->isLicenseValid())
+        if(!$this->controller->isLicenseValid())
             $this->stopLogon();
     }
 }

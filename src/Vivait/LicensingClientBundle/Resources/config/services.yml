@@ -1,0 +1,4 @@
+services:
+    licensingclient.controller:
+        class: Vivait\LicensingClientBundle\Controller\LicenseController
+        arguments: [%vivait.licensingclient.licensekey%, %kernel.environment%, %kernel.cache_dir%]
