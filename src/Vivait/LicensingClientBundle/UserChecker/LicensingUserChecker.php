@@ -52,7 +52,7 @@ class LicensingUserChecker extends UserChecker
             $this->stopLogon($e->getMessage());
             return;
         }
-        
+
         if(!$this->controller->isLicenseValid())
             $this->stopLogon();
 
