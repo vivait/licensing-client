@@ -20,6 +20,6 @@ class UserCheckerCompilerPass implements CompilerPassInterface
     {
         $container->getDefinition("security.user_checker")
             ->addArgument(new Reference("licensingclient.controller"))
-            ->setClass('Vivait\LicensingClientBundle\LicensingUserChecker');
+            ->setClass('Vivait\LicensingClientBundle\UserChecker\LicensingUserChecker');
     }
 }
