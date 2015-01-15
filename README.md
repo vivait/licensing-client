@@ -21,7 +21,7 @@ public function registerBundles()
 {
     $bundles = array(
         // ...
-        new Vivait\LicensingClientBundle\VivaitLicensingClientBundle()
+        new Vivait\LicensingClientBundle\VivaitLicensingClientBundle(),
     );
 }
 ```

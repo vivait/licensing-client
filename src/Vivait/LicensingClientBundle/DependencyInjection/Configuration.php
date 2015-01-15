@@ -19,6 +19,29 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
 
+        $rootNode = $treeBuilder->root('vivait_licensing_client');
+        $rootNode
+            ->children()
+                ->scalarNode('client_id')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('client_secret')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('app_name')
+                    ->cannotBeEmpty()
+                    ->isRequired()
+                ->end()
+                ->scalarNode('token_url')
+                    ->isRequired()
+                ->end()
+                ->scalarNode('check_url')
+                    ->isRequired()
+                ->end()
+            ->end()
+        ;
+
+
         return $treeBuilder;
     }
 }
