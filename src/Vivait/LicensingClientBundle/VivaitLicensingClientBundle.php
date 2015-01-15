@@ -11,7 +11,7 @@ class VivaitLicensingClientBundle extends Bundle {
 
     public function build(ContainerBuilder $container)
     {
-        $container->addCompilerPass(new UserCheckerCompilerPass());
+//        $container->addCompilerPass(new UserCheckerCompilerPass());
     }
 
 } 

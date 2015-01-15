@@ -1,4 +1,16 @@
+#services:
+#    licensingclient.controller:
+#        class: Vivait\LicensingClientBundle\Controller\LicenseController
+#        arguments: [%vivait.licensingclient.licensekey%, %kernel.environment%, %kernel.cache_dir%]
+
 services:
-    licensingclient.controller:
-        class: Vivait\LicensingClientBundle\Controller\LicenseController
-        arguments: [%vivait.licensingclient.licensekey%, %kernel.environment%, %kernel.cache_dir%]
+    vivait_licensing_guzzle:
+        class: GuzzleHttp\Client
+
+    vivait_licensing_client.strategy.application:
+        class: Vivait\LicensingClientBundle\Service\ApplicationStrategy
+        arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager, %vivait_licensing.oauth.token_url%, %vivait_licensing.oauth.check_url%, %vivait_licensing.application%, %vivait_licensing.client_id%, %vivait_licensing.client_secret%]
+        
+    vivait_licensing_client.strategy.endpoint:
+        class: Vivait\LicensingClientBundle\Service\EndpointStrategy
+        arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager, %vivait_licensing.oauth.token_url%, %vivait_licensing.oauth.check_url%, %vivait_licensing.application%]

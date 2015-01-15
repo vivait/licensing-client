@@ -21,7 +21,5 @@ class VivaitLicensingClientExtension extends Extension
     {
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
-
-        $container->setParameter('vivait.licensingclient.licensekey', $configs[0]['licensekey']);
     }
 }
