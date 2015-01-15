@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
+use Vivait\LicensingClientBundle\Strategy\EndpointStrategy;
 
 class TokenController extends Controller
 {
@@ -15,7 +16,6 @@ class TokenController extends Controller
     {
         /** @var EndpointStrategy $endpointStrategy */
         $endpointStrategy = $this->get('vivait_licensing_client.strategy.endpoint');
-
 
         try {
             $tokenData = $endpointStrategy->getToken($request->request->all());
