@@ -1,6 +1,6 @@
 <?php
 
-namespace Vivait\LicensingClientBundle\Service;
+namespace Vivait\LicensingClientBundle\Strategy;
 
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
@@ -42,7 +42,7 @@ class ApplicationStrategy extends AbstractStrategy
             'client_secret' => $clientSecret
         ]);
 
-        $clientData = $this->getClient($tokenData['access_token']);
+        $this->getClient($tokenData['access_token']);
 
         $accessToken = new AccessToken();
 

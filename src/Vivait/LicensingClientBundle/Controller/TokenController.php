@@ -2,10 +2,10 @@
 
 namespace Vivait\LicensingClientBundle\Controller;
 
-use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 
 class TokenController extends Controller
@@ -13,13 +13,15 @@ class TokenController extends Controller
 
     public function tokenAction(Request $request)
     {
-        $guzzle = new Client();
-
         $endpointStrategy = $this->get('vivait_licensing_client.strategy.endpoint');
 
-        $tokenData = $endpointStrategy->getToken($request->request->all());
+        try {
+            $tokenData = $endpointStrategy->getToken($request->request->all());
 
-        $clientData = $endpointStrategy->getClient($tokenData['access_token']);
+            $clientData = $endpointStrategy->getClient($tokenData['access_token']);
+        } catch(HttpException $e) {
+            return new JsonResponse(json_decode($e->getMessage()), $e->getStatusCode());
+        }
 
         $accessToken = new AccessToken();
 
