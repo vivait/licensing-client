@@ -55,7 +55,7 @@ abstract class AbstractStrategy
 
     public function getToken($body)
     {
-        $tokenRequest = $this->guzzle->createRequest("POST", "http://licensing.dev/api/oauth/token", [
+        $tokenRequest = $this->guzzle->createRequest("POST", $this->tokenUrl, [
             'body' => $body
         ]);
 
@@ -78,7 +78,7 @@ abstract class AbstractStrategy
 
     public function getClient($accessToken)
     {
-        $clientRequest = $this->guzzle->createRequest("POST", "http://licensing.dev/api/check", [
+        $clientRequest = $this->guzzle->createRequest("POST", $this->checkUrl, [
             'body' => ['access_token' => $accessToken, 'application' => $this->application]
         ]);
 

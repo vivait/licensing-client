@@ -13,16 +13,16 @@ class TokenController extends Controller
 
     public function tokenAction(Request $request)
     {
+        /** @var EndpointStrategy $endpointStrategy */
         $endpointStrategy = $this->get('vivait_licensing_client.strategy.endpoint');
+
 
         try {
             $tokenData = $endpointStrategy->getToken($request->request->all());
-
             $clientData = $endpointStrategy->getClient($tokenData['access_token']);
         } catch(HttpException $e) {
             return new JsonResponse(json_decode($e->getMessage()), $e->getStatusCode());
         }
-
         $accessToken = new AccessToken();
 
         $accessToken->setToken($tokenData['access_token']);
