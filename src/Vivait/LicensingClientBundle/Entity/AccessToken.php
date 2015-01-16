@@ -30,6 +30,7 @@ class AccessToken
     protected $token;
 
     /**
+     * @var \DateTime
      * @ORM\Column(type="datetime")
      */
     protected $expiresAt;
@@ -84,7 +85,7 @@ class AccessToken
     public function hasExpired()
     {
         if ($this->expiresAt) {
-            return time() > $this->expiresAt;
+            return time() > $this->expiresAt->format('U');
         }
 
         return false;

@@ -39,7 +39,7 @@ class TokenController extends Controller
     }
 
     /**
-     * Called to stop propogation of protected resource controller (i.e. to stop the protected resource controller
+     * Called to stop propagation of protected resource controller (i.e. to stop the protected resource controller
      * performing any operations.
      *
      * @param Request $request
