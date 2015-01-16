@@ -26,6 +26,6 @@ class EndpointStrategy extends AbstractStrategy
             throw new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided has expired."]));
         }
 
-        return $tokenObject;
+        $this->accessToken = $tokenObject;
     }
 }

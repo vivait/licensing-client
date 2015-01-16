@@ -46,14 +46,6 @@ class AccessToken
     /**
      * {@inheritdoc}
      */
-    public function getClientId()
-    {
-        return $this->getClient()->getPublicId();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function setExpiresAt($timestamp)
     {
         $this->expiresAt = $timestamp;

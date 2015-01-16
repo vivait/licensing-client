@@ -20,4 +20,3 @@ services:
         scope: request
         tags:
             - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
-#            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }

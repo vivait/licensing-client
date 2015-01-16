@@ -58,22 +58,19 @@ class ApplicationStrategy extends AbstractStrategy
         return $accessToken;
     }
 
-
     public function authorize()
     {
-        $em = $this->entityManager;
-
         /** @var AccessToken $token */
-        $token = $em->getRepository('VivaitLicensingClientBundle:AccessToken')->findBy(['client' => $this->clientId], ['expiresAt' => 'desc'], 1);
+        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findBy(['client' => $this->clientId], ['expiresAt' => 'desc'], 1);
 
         if ($token) {
             if (!$token->hasExpired()) {
                 if ($token->getToken() == hash_hmac("sha512", serialize(['client' => $this->clientId, 'expires_at' => $token->getExpiresAt()]), $this->clientSecret)) {
-                    return $token;
+                    $this->accessToken = $token;
                 }
             }
         }
 
-        return $this->requestToken($this->clientId, $this->clientSecret);
+        $this->accessToken = $this->requestToken($this->clientId, $this->clientSecret);
     }
 }

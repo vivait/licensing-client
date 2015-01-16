@@ -31,6 +31,11 @@ abstract class AbstractStrategy
     private $checkUrl;
 
     /**
+     * @var AccessToken
+     */
+    protected $accessToken;
+
+    /**
      * @param Request $request
      * @param Client $guzzle
      * @param EntityManagerInterface $entityManagerInterface
@@ -49,7 +54,7 @@ abstract class AbstractStrategy
     }
 
     /**
-     * @return AccessToken
+     * @return boolean
      */
     abstract public function authorize();
 
@@ -97,5 +102,10 @@ abstract class AbstractStrategy
         }
 
         return $clientData;
+    }
+
+    public function getAccessToken()
+    {
+        return $this->accessToken;
     }
 }
