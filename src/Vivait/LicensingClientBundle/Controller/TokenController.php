@@ -5,6 +5,7 @@ namespace Vivait\LicensingClientBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 use Vivait\LicensingClientBundle\Strategy\EndpointStrategy;
@@ -18,7 +19,7 @@ class TokenController extends Controller
         $endpointStrategy = $this->get('vivait_licensing_client.strategy.endpoint');
 
         try {
-            $tokenData = $endpointStrategy->getToken($request->request->all());
+            $tokenData = $endpointStrategy->getToken($request->query->all());
             $clientData = $endpointStrategy->getClient($tokenData['access_token']);
         } catch(HttpException $e) {
             return new JsonResponse(json_decode($e->getMessage()), $e->getStatusCode());
@@ -35,6 +36,19 @@ class TokenController extends Controller
         $em->flush();
 
         return new JsonResponse($tokenData);
+    }
+
+    /**
+     * Called to stop propogation of protected resource controller (i.e. to stop the protected resource controller
+     * performing any operations.
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function exceptionAction(Request $request)
+    {
+        $exception = $request->attributes->get('licensing_client.endpoint.exception');
+        return new Response($exception['message'], $exception['code']);
     }
 
 

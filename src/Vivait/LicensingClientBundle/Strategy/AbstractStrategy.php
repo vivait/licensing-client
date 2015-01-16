@@ -85,13 +85,13 @@ abstract class AbstractStrategy
         try {
             $clientData = $this->guzzle->send($clientRequest);
         } catch (ClientException $e) {
-            $clientData = $e->getResponse();
-            throw new HttpException($clientData->getStatusCode(), $clientData->getBody()->getContents());
+            throw new HttpException($e->getResponse()->getStatusCode(), $e->getResponse()->getBody()->getContents());
         }
 
+        $clientData = $clientData->json();
         if (
-            !array_key_exists("publicId", $clientData->json()) ||
-            !array_key_exists("secret", $clientData->json())
+            !array_key_exists("publicId", $clientData) ||
+            !array_key_exists("secret", $clientData)
         ) {
             throw new BadRequestHttpException(json_encode(["error" => "invalid_client", "error_description" => "The client credentials are invalid"]));
         }

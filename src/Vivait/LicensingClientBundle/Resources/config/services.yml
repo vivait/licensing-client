@@ -13,3 +13,11 @@ services:
         arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager, %vivait_licensing.oauth.token_url%, %vivait_licensing.oauth.check_url%, %vivait_licensing.application%]
         public: true
         scope: request
+
+    vivait_licensing_client.request.listener:
+        class: Vivait\LicensingClientBundle\EventListener\ProtectEndpointListener
+        arguments: [@annotation_reader, @vivait_licensing_client.strategy.endpoint]
+        scope: request
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
+#            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
