@@ -38,6 +38,7 @@ class ProtectEndpointListener
     {
         if ($event->getController()[0] instanceof Controller) {
             $controller = $event->getController()[0];
+            $method = $event->getController()[1];
             $obj = new \ReflectionObject($controller);
 
             foreach ($obj->getMethods() as $reflectionMethod) {
@@ -45,7 +46,7 @@ class ProtectEndpointListener
                 /** @var ProtectEndpointAnnotation $annotation */
                 $annotation = $this->reader->getMethodAnnotation($reflectionMethod, $this->class);
 
-                if ($annotation) {
+                if ($annotation && $reflectionMethod->getName() == $method) {
                     try {
                         $this->strategy->authorize();
                     } catch (HttpException $e) {
