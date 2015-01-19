@@ -49,6 +49,7 @@ class AccessToken
     public function setExpiresAt($timestamp)
     {
         $this->expiresAt = $timestamp;
+        return $this;
     }
 
     /**
@@ -89,6 +90,7 @@ class AccessToken
     public function setToken($token)
     {
         $this->token = $token;
+        return $this;
     }
 
     /**
@@ -105,6 +107,7 @@ class AccessToken
     public function setClient($client)
     {
         $this->client = $client;
+        return $this;
     }
 
     /**
