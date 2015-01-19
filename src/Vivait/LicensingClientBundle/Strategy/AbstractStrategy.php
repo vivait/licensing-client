@@ -26,14 +26,15 @@ abstract class AbstractStrategy
      * @var EntityManagerInterface
      */
     protected $entityManager;
-    protected $application;
-    private $tokenUrl;
-    private $checkUrl;
 
     /**
      * @var AccessToken
      */
     protected $accessToken;
+
+    protected $application;
+    protected $tokenUrl;
+    protected $checkUrl;
 
     /**
      * @param Request $request
@@ -107,5 +108,29 @@ abstract class AbstractStrategy
     public function getAccessToken()
     {
         return $this->accessToken;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTokenUrl()
+    {
+        return $this->tokenUrl;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCheckUrl()
+    {
+        return $this->checkUrl;
     }
 }
