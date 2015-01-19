@@ -27,32 +27,29 @@ abstract class AbstractStrategy
      */
     protected $entityManager;
     protected $application;
-    private $tokenUrl;
-    private $checkUrl;
+    protected $baseUrl;
 
     /**
      * @var AccessToken
      */
     protected $accessToken;
-    private $debug;
+    protected $debug;
 
     /**
      * @param Request $request
      * @param Client $guzzle
      * @param EntityManagerInterface $entityManagerInterface
      * @param $debug
-     * @param $tokenUrl
-     * @param $checkUrl
+     * @param $baseUrl
      * @param $application
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $tokenUrl, $checkUrl, $application)
+    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $baseUrl, $application)
     {
         $this->request = $request;
         $this->guzzle = $guzzle;
         $this->entityManager = $entityManagerInterface;
         $this->application = $application;
-        $this->tokenUrl = $tokenUrl;
-        $this->checkUrl = $checkUrl;
+        $this->baseUrl = $baseUrl;
         $this->debug = $debug;
     }
 
@@ -73,7 +70,7 @@ abstract class AbstractStrategy
             return $this->getDebugToken();
         }
 
-        $tokenRequest = $this->guzzle->createRequest("GET", $this->tokenUrl, [
+        $tokenRequest = $this->guzzle->createRequest("GET", $this->baseUrl . '/oauth/token', [
             'query' => [
                 'client_id' => $clientId,
                 'client_secret' => $clientSecret,
@@ -108,7 +105,7 @@ abstract class AbstractStrategy
             return $this->getDebugClient();
         }
 
-        $clientRequest = $this->guzzle->createRequest("POST", $this->checkUrl, [
+        $clientRequest = $this->guzzle->createRequest("POST", $this->baseUrl . '/check', [
             'body' => ['application' => $this->application],
             'headers', ['Authorization' => 'Bearer ' . $accessToken]
         ]);
@@ -130,6 +127,9 @@ abstract class AbstractStrategy
         return $clientData;
     }
 
+    /**
+     * @return AccessToken
+     */
     public function getAccessToken()
     {
         return $this->accessToken;
@@ -163,5 +163,21 @@ abstract class AbstractStrategy
                 'email' => 'debug@transdoc.dev'
             ]
         ];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
     }
 }
