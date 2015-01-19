@@ -26,9 +26,9 @@ class ApplicationStrategy extends AbstractStrategy
      * @param $clientId
      * @param $clientSecret
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $tokenUrl, $checkUrl, $application, $clientId, $clientSecret)
+    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $baseUrl, $application, $clientId, $clientSecret)
     {
-        parent::__construct($request, $guzzle, $entityManagerInterface, $tokenUrl, $checkUrl, $application);
+        parent::__construct($request, $guzzle, $entityManagerInterface, $baseUrl, $application);
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
     }
@@ -46,9 +46,9 @@ class ApplicationStrategy extends AbstractStrategy
 
         $accessToken = new AccessToken();
 
-        $accessToken->setToken(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => new \DateTime(sprintf('+%d seconds', $tokenData['expires_in']))]), $clientSecret));
         $accessToken->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])));
-        $accessToken->setClient($clientId);
+        $accessToken->setToken($tokenData['access_token']);
+        $accessToken->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret));
 
         $em = $this->entityManager;
 
@@ -61,12 +61,13 @@ class ApplicationStrategy extends AbstractStrategy
     public function authorize()
     {
         /** @var AccessToken $token */
-        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findBy(['client' => $this->clientId], ['expiresAt' => 'desc'], 1);
+        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneBy(['client' => $this->clientId], ['expiresAt' => 'desc'], 1);
 
         if ($token) {
             if (!$token->hasExpired()) {
-                if ($token->getToken() == hash_hmac("sha512", serialize(['client' => $this->clientId, 'expires_at' => $token->getExpiresAt()]), $this->clientSecret)) {
+                if ($token->getClient() == hash_hmac("sha256", serialize(['client' => $this->clientId, 'expires_at' => $token->getExpiresAt()]), $this->clientSecret)) {
                     $this->accessToken = $token;
+                    return;
                 }
             }
         }
