@@ -4,13 +4,13 @@ services:
 
     vivait_licensing_client.strategy.application:
         class: Vivait\LicensingClientBundle\Strategy\ApplicationStrategy
-        arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager, %vivait_licensing.oauth.token_url%, %vivait_licensing.oauth.check_url%, %vivait_licensing.application%, %vivait_licensing.client_id%, %vivait_licensing.client_secret%]
+        arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager,  %vivait_licensing_client.debug%,  %vivait_licensing_client.oauth.token_url%, %vivait_licensing_client.oauth.check_url%, %vivait_licensing_client.application%, %vivait_licensing_client.client_id%, %vivait_licensing_client.client_secret%]
         public: true
         scope: request
 
     vivait_licensing_client.strategy.endpoint:
         class: Vivait\LicensingClientBundle\Strategy\EndpointStrategy
-        arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager, %vivait_licensing.oauth.token_url%, %vivait_licensing.oauth.check_url%, %vivait_licensing.application%]
+        arguments: [@request, @vivait_licensing_guzzle, @doctrine.orm.default_entity_manager,  %vivait_licensing_client.debug%,  %vivait_licensing_client.oauth.token_url%, %vivait_licensing_client.oauth.check_url%, %vivait_licensing_client.application%]
         public: true
         scope: request
 

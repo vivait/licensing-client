@@ -23,12 +23,16 @@ class ApplicationStrategy extends AbstractStrategy
      * @param Request $request
      * @param Client $guzzle
      * @param EntityManagerInterface $entityManagerInterface
+     * @param $debug
+     * @param $tokenUrl
+     * @param $checkUrl
+     * @param $application
      * @param $clientId
      * @param $clientSecret
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $tokenUrl, $checkUrl, $application, $clientId, $clientSecret)
+    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $tokenUrl, $checkUrl, $application, $clientId, $clientSecret)
     {
-        parent::__construct($request, $guzzle, $entityManagerInterface, $tokenUrl, $checkUrl, $application);
+        parent::__construct($request, $guzzle, $entityManagerInterface, $debug, $tokenUrl, $checkUrl, $application);
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
     }
@@ -36,11 +40,7 @@ class ApplicationStrategy extends AbstractStrategy
 
     private function requestToken($clientId, $clientSecret)
     {
-        $tokenData = $this->getToken([
-            'grant_type' => 'client_credentials',
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret
-        ]);
+        $tokenData = $this->getToken($clientId, $clientSecret);
 
         $this->getClient($tokenData['access_token']);
 

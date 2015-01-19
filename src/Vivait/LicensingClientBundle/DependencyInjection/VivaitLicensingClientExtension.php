@@ -22,11 +22,12 @@ class VivaitLicensingClientExtension extends ConfigurableExtension
     {
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
 
-        $container->setParameter('vivait_licensing.client_id', $mergedConfig['client_id']);
-        $container->setParameter('vivait_licensing.client_secret', $mergedConfig['client_secret']);
-        $container->setParameter('vivait_licensing.application', $mergedConfig['app_name']);
-        $container->setParameter('vivait_licensing.oauth.token_url', $mergedConfig['token_url']);
-        $container->setParameter('vivait_licensing.oauth.check_url', $mergedConfig['check_url']);
+        $container->setParameter('vivait_licensing_client.client_id', $mergedConfig['client_id']);
+        $container->setParameter('vivait_licensing_client.client_secret', $mergedConfig['client_secret']);
+        $container->setParameter('vivait_licensing_client.application', $mergedConfig['app_name']);
+        $container->setParameter('vivait_licensing_client.oauth.token_url', $mergedConfig['token_url']);
+        $container->setParameter('vivait_licensing_client.oauth.check_url', $mergedConfig['check_url']);
+        $container->setParameter('vivait_licensing_client.debug', $mergedConfig['debug']);
 
         $loader->load('services.yml');
     }
