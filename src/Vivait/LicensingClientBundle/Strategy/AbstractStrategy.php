@@ -26,30 +26,31 @@ abstract class AbstractStrategy
      * @var EntityManagerInterface
      */
     protected $entityManager;
+    protected $application;
+    protected $baseUrl;
 
     /**
      * @var AccessToken
      */
     protected $accessToken;
-
-    protected $application;
-    protected $baseUrl;
+    protected $debug;
 
     /**
      * @param Request $request
      * @param Client $guzzle
      * @param EntityManagerInterface $entityManagerInterface
-     * @param $tokenUrl
-     * @param $checkUrl
+     * @param $debug
+     * @param $baseUrl
      * @param $application
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $baseUrl, $application)
+    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $baseUrl, $application)
     {
         $this->request = $request;
         $this->guzzle = $guzzle;
         $this->entityManager = $entityManagerInterface;
         $this->application = $application;
         $this->baseUrl = $baseUrl;
+        $this->debug = $debug;
     }
 
     /**
@@ -58,13 +59,23 @@ abstract class AbstractStrategy
     abstract public function authorize();
 
     /**
-     * @param $body
-     * @return mixed
+     * @param $clientId
+     * @param $clientSecret
+     * @param $grantType
+     * @return array
      */
-    public function getToken($body)
+    public function getToken($clientId, $clientSecret, $grantType = 'client_credentials')
     {
-        $tokenRequest = $this->guzzle->createRequest("POST", $this->baseUrl . '/oauth/token', [
-            'body' => $body
+        if ($this->debug) {
+            return $this->getDebugToken();
+        }
+
+        $tokenRequest = $this->guzzle->createRequest("GET", $this->baseUrl . '/oauth/token', [
+            'query' => [
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'grant_type' => $grantType
+            ]
         ]);
 
         try {
@@ -86,12 +97,17 @@ abstract class AbstractStrategy
 
     /**
      * @param $accessToken
-     * @return \GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Ring\Future\FutureInterface|mixed
+     * @return array|\GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Ring\Future\FutureInterface|mixed
      */
     public function getClient($accessToken)
     {
+        if ($this->debug) {
+            return $this->getDebugClient();
+        }
+
         $clientRequest = $this->guzzle->createRequest("POST", $this->baseUrl . '/check', [
-            'body' => ['access_token' => $accessToken, 'application' => $this->application]
+            'body' => ['application' => $this->application],
+            'headers', ['Authorization' => 'Bearer ' . $accessToken]
         ]);
 
         try {
@@ -117,6 +133,36 @@ abstract class AbstractStrategy
     public function getAccessToken()
     {
         return $this->accessToken;
+    }
+
+    protected function getDebugToken()
+    {
+        return [
+            'access_token' => 'ZjkwYjljOTRmMzVhMzcyYzkzZGNlMDViNWM4OTcyNzFiNDZkNmJiNWQ4MTRlOTAxYjQzYmNmNDg5Mjk4M2M3Zg',
+            'expires_in' => 3600,
+            'token_type' => 'bearer',
+            'scope' => null
+        ];
+    }
+
+    protected function getDebugClient()
+    {
+        return [
+            'secret' => '67gcm2cpcdc08cwgosskck0k4wss80kwosw8c4g8kwoo8kckkg',
+            'allowed_grant_types' => [
+                'client_credentials',
+            ],
+            'publicId' => '2_5z0kynp7p84cscssko0w44c00w04k48gkcc0oc84gs4kgosgow',
+            'id' => 2,
+            'application' => [
+                'id' => 1,
+                'name' => 'transdoc',
+            ],
+            'user' => [
+                'id' => 1,
+                'email' => 'debug@transdoc.dev'
+            ]
+        ];
     }
 
     /**
