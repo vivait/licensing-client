@@ -33,8 +33,7 @@ abstract class AbstractStrategy
     protected $accessToken;
 
     protected $application;
-    protected $tokenUrl;
-    protected $checkUrl;
+    protected $baseUrl;
 
     /**
      * @param Request $request
@@ -44,14 +43,13 @@ abstract class AbstractStrategy
      * @param $checkUrl
      * @param $application
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $tokenUrl, $checkUrl, $application)
+    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $baseUrl, $application)
     {
         $this->request = $request;
         $this->guzzle = $guzzle;
         $this->entityManager = $entityManagerInterface;
         $this->application = $application;
-        $this->tokenUrl = $tokenUrl;
-        $this->checkUrl = $checkUrl;
+        $this->baseUrl = $baseUrl;
     }
 
     /**
@@ -59,9 +57,13 @@ abstract class AbstractStrategy
      */
     abstract public function authorize();
 
+    /**
+     * @param $body
+     * @return mixed
+     */
     public function getToken($body)
     {
-        $tokenRequest = $this->guzzle->createRequest("POST", $this->tokenUrl, [
+        $tokenRequest = $this->guzzle->createRequest("POST", $this->baseUrl . '/oauth/token', [
             'body' => $body
         ]);
 
@@ -82,9 +84,13 @@ abstract class AbstractStrategy
         return $tokenData->json();
     }
 
+    /**
+     * @param $accessToken
+     * @return \GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Ring\Future\FutureInterface|mixed
+     */
     public function getClient($accessToken)
     {
-        $clientRequest = $this->guzzle->createRequest("POST", $this->checkUrl, [
+        $clientRequest = $this->guzzle->createRequest("POST", $this->baseUrl . '/check', [
             'body' => ['access_token' => $accessToken, 'application' => $this->application]
         ]);
 
@@ -105,6 +111,9 @@ abstract class AbstractStrategy
         return $clientData;
     }
 
+    /**
+     * @return AccessToken
+     */
     public function getAccessToken()
     {
         return $this->accessToken;
@@ -121,16 +130,8 @@ abstract class AbstractStrategy
     /**
      * @return mixed
      */
-    public function getTokenUrl()
+    public function getBaseUrl()
     {
-        return $this->tokenUrl;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCheckUrl()
-    {
-        return $this->checkUrl;
+        return $this->baseUrl;
     }
 }

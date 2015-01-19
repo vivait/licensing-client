@@ -26,9 +26,9 @@ class ApplicationStrategy extends AbstractStrategy
      * @param $clientId
      * @param $clientSecret
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $tokenUrl, $checkUrl, $application, $clientId, $clientSecret)
+    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $baseUrl, $application, $clientId, $clientSecret)
     {
-        parent::__construct($request, $guzzle, $entityManagerInterface, $tokenUrl, $checkUrl, $application);
+        parent::__construct($request, $guzzle, $entityManagerInterface, $baseUrl, $application);
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
     }
