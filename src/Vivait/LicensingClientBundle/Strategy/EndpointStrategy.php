@@ -29,7 +29,7 @@ class EndpointStrategy extends AbstractStrategy
         }
 
         /** @var AccessToken $tokenObject */
-        $tokenObject = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneByToken($token);
+        $tokenObject = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneBy(['token' => $token]);
 
         if (!$tokenObject) {
             throw new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided is invalid."]));

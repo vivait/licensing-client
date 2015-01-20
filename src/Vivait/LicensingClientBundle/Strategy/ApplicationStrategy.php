@@ -4,6 +4,7 @@ namespace Vivait\LicensingClientBundle\Strategy;
 
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 
@@ -21,7 +22,7 @@ class ApplicationStrategy extends AbstractStrategy
 
     /**
      * @param Request $request
-     * @param Client $guzzle
+     * @param ClientInterface $guzzle
      * @param EntityManagerInterface $entityManagerInterface
      * @param $debug
      * @param $baseUrl
@@ -29,7 +30,7 @@ class ApplicationStrategy extends AbstractStrategy
      * @param $clientId
      * @param $clientSecret
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $baseUrl, $application, $clientId, $clientSecret)
+    public function __construct(Request $request, ClientInterface $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $baseUrl, $application, $clientId, $clientSecret)
     {
         parent::__construct($request, $guzzle, $entityManagerInterface, $debug, $baseUrl, $application);
         $this->clientId = $clientId;

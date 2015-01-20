@@ -4,6 +4,7 @@ namespace Vivait\LicensingClientBundle\Strategy;
 
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -37,13 +38,13 @@ abstract class AbstractStrategy
 
     /**
      * @param Request $request
-     * @param Client $guzzle
+     * @param ClientInterface $guzzle
      * @param EntityManagerInterface $entityManagerInterface
      * @param $debug
      * @param $baseUrl
      * @param $application
      */
-    public function __construct(Request $request, Client $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $baseUrl, $application)
+    public function __construct(Request $request, ClientInterface $guzzle, EntityManagerInterface $entityManagerInterface, $debug = false, $baseUrl, $application)
     {
         $this->request = $request;
         $this->guzzle = $guzzle;
