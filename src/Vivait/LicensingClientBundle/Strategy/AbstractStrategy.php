@@ -70,7 +70,7 @@ abstract class AbstractStrategy
             return $this->getDebugToken();
         }
 
-        $tokenRequest = $this->guzzle->createRequest("GET", $this->baseUrl . '/oauth/token', [
+        $tokenRequest = $this->guzzle->createRequest("GET", $this->baseUrl . 'oauth/token', [
             'query' => [
                 'client_id' => $clientId,
                 'client_secret' => $clientSecret,
@@ -105,7 +105,7 @@ abstract class AbstractStrategy
             return $this->getDebugClient();
         }
 
-        $clientRequest = $this->guzzle->createRequest("POST", $this->baseUrl . '/check', [
+        $clientRequest = $this->guzzle->createRequest("POST", $this->baseUrl . 'check', [
             'body' => ['application' => $this->application],
             'headers', ['Authorization' => 'Bearer ' . $accessToken]
         ]);
@@ -135,6 +135,10 @@ abstract class AbstractStrategy
         return $this->accessToken;
     }
 
+    /**
+     * @return array
+     * @deprecated An alternative should be found
+     */
     protected function getDebugToken()
     {
         return [
@@ -145,6 +149,10 @@ abstract class AbstractStrategy
         ];
     }
 
+    /**
+     * @return array
+     * @deprecated An alternative should be found
+     */
     protected function getDebugClient()
     {
         return [
