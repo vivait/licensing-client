@@ -45,9 +45,10 @@ class ApplicationStrategy extends AbstractStrategy
 
         $accessToken = new AccessToken();
 
-        $accessToken->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])));
-        $accessToken->setToken($tokenData['access_token']);
-        $accessToken->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret));
+        $accessToken
+            ->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])))
+            ->setToken($tokenData['access_token'])
+            ->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret));
 
         $em = $this->entityManager;
 
