@@ -36,7 +36,7 @@ class AccessToken
     protected $expiresAt;
 
     /**
-     * {@inheritdoc}
+     * @return mixed
      */
     public function getId()
     {
@@ -44,16 +44,17 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @param \DateTime $timestamp
+     * @return $this
      */
-    public function setExpiresAt($timestamp)
+    public function setExpiresAt(\DateTime $timestamp)
     {
         $this->expiresAt = $timestamp;
         return $this;
     }
 
     /**
-     * {@inheritdoc}
+     * @return \DateTime
      */
     public function getExpiresAt()
     {
@@ -61,7 +62,7 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @return \DateTime|int
      */
     public function getExpiresIn()
     {
@@ -73,7 +74,7 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @return bool
      */
     public function hasExpired()
     {
@@ -85,7 +86,8 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @param $token
+     * @return $this
      */
     public function setToken($token)
     {
@@ -94,7 +96,7 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @return mixed
      */
     public function getToken()
     {
@@ -102,7 +104,8 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @param $client
+     * @return $this
      */
     public function setClient($client)
     {
@@ -111,7 +114,7 @@ class AccessToken
     }
 
     /**
-     * {@inheritdoc}
+     * @return mixed
      */
     public function getClient()
     {

@@ -2,13 +2,45 @@
 
 namespace Vivait\LicensingClientBundle\Strategy;
 
-use Symfony\Component\Finder\Exception\AccessDeniedException;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
+use Vivait\LicensingClientBundle\Licensing\Api;
 
-class EndpointStrategy extends AbstractStrategy
+class EndpointStrategy implements StrategyInterface
 {
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
+
+    /**
+     * @var AccessToken
+     */
+    protected $accessToken;
+    /**
+     * @var Api
+     */
+    protected $api;
+
+    /**
+     * @param Request $request
+     * @param EntityManagerInterface $entityManagerInterface
+     * @param Api $api
+     */
+    public function __construct(EntityManagerInterface $entityManagerInterface, Api $api, Request $request)
+    {
+        $this->request = $request;
+        $this->entityManager = $entityManagerInterface;
+        $this->api = $api;
+    }
+
     public function authorize()
     {
         if ($this->request->headers->has('authorization') && preg_match('/Bearer ([A-Z0-9]+)/i', $this->request->headers->get('authorization'), $matches)) {
@@ -29,7 +61,7 @@ class EndpointStrategy extends AbstractStrategy
         }
 
         /** @var AccessToken $tokenObject */
-        $tokenObject = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneByToken($token);
+        $tokenObject = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneBy(['token' => $token]);
 
         if (!$tokenObject) {
             throw new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided is invalid."]));
@@ -40,5 +72,13 @@ class EndpointStrategy extends AbstractStrategy
         }
 
         $this->accessToken = $tokenObject;
+    }
+
+    /**
+     * @return AccessToken
+     */
+    public function getAccessToken()
+    {
+        return $this->accessToken;
     }
 }
