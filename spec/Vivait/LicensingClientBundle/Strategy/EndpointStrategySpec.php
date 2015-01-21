@@ -12,17 +12,19 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
+use Vivait\LicensingClientBundle\Licensing\Api;
 
 class EndpointStrategySpec extends ObjectBehavior
 {
     function it_is_initializable()
     {
         $this->shouldHaveType('Vivait\LicensingClientBundle\Strategy\EndpointStrategy');
+        $this->shouldHaveType('Vivait\LicensingClientBundle\Strategy\StrategyInterface');
     }
 
-    function let(Request $request, ClientInterface $guzzle, EntityManagerInterface $entityManager)
+    function let(EntityManagerInterface $entityManager, Api $api, Request $request)
     {
-        $this->beConstructedWith($request, $guzzle, $entityManager, 'http://myapi.com/api/', 'myapp', false);
+        $this->beConstructedWith($entityManager, $api, $request);
     }
 
     function it_requires_an_access_token(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag)

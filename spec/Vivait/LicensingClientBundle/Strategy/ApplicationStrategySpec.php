@@ -12,6 +12,7 @@ use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
+use Vivait\LicensingClientBundle\Licensing\Api;
 
 class ApplicationStrategySpec extends ObjectBehavior
 {
@@ -20,9 +21,9 @@ class ApplicationStrategySpec extends ObjectBehavior
         $this->shouldHaveType('Vivait\LicensingClientBundle\Strategy\ApplicationStrategy');
     }
 
-    function let(Request $request, EntityManagerInterface $entityManager)
+    function let(Request $request, EntityManagerInterface $entityManager, Api $api)
     {
-        $this->beConstructedWith($request, $guzzle, $entityManager, 'http://myapi.com/api/', 'myapp', false, 'myid', 'mysecret');
+        $this->beConstructedWith($entityManager, $api, 'myid', 'mysecret');
     }
 
     function it_can_authorise_the_application(EntityManagerInterface $entityManager, ObjectRepository $objectRepository)
@@ -52,48 +53,41 @@ class ApplicationStrategySpec extends ObjectBehavior
         $this->getAccessToken()->shouldReturn($accessToken);
     }
 
-    function it_creates_a_new_token_if_none_exist(EntityManagerInterface $entityManager, ObjectRepository $objectRepository, ClientInterface $guzzle)
+    function it_creates_a_new_token_if_none_exist(Api $api, EntityManagerInterface $entityManager, ObjectRepository $objectRepository)
     {
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
         $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn(null);
 
-        $this->getToken('myid', 'mysecret')->shouldReturn([]);
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
+        $entityManager->persist(Argument::any())->shouldBeCalled();
 
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
+        $entityManager->flush(Argument::any())->shouldBeCalled();
 
         $this->authorize();
-        $this->getAccessToken()->shouldReturn($accessToken);
+        $this->getAccessToken()->shouldHaveType('Vivait\LicensingClientBundle\Entity\AccessToken');
     }
 
-//    function it_creates_a_new_token_if_it_is_expired(EntityManagerInterface $entityManager, ObjectRepository $objectRepository)
-//    {
-//        $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
-//
-//        $accessToken = new AccessToken();
-//        $accessToken->setExpiresAt(new \DateTime('yesterday'));
-//        $accessToken->setClient(hash_hmac("sha256", serialize(['client' => 'myid', 'expires_at' => $accessToken->getExpiresAt()]), 'mysecret'));
-//
-//        $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn($accessToken);
-//
-//        $this->authorize();
-//        $this->getAccessToken()->shouldReturn($accessToken);
-//    }
-
-    function it_fails_if_credentials_incorrect(ClientInterface $guzzle)
+    function it_creates_a_new_token_if_its_expired(Api $api, EntityManagerInterface $entityManager, ObjectRepository $objectRepository, AccessToken $newAccessToken)
     {
-        $response = new Response(401);
-        $response->setBody(Stream::factory("{}"));
+        $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
 
-        $guzzle->get('http://myapi.com/api/oauth/token',  [
-            'query' => [
-                'client_id' => 'myid',
-                'client_secret' => 'incorrectsecret',
-                'grant_type' => 'client_credentials'
-            ]
-        ])->willReturn($response);
+        $accessToken = new AccessToken();
+        $accessToken->setExpiresAt(new \DateTime('yesterday'));
 
+        $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn($accessToken);
 
-        $this->shouldThrow(new BadRequestHttpException(json_encode(["error" => "invalid_client", "error_description" => "The client credentials are invalid"])))
-            ->duringGetToken('myid', 'incorrectsecret');
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
+        $entityManager->persist(Argument::any())->shouldBeCalled();
+
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
+        $entityManager->flush(Argument::any())->shouldBeCalled();
+
+        $this->authorize();
+        $this->getAccessToken()->shouldHaveType('Vivait\LicensingClientBundle\Entity\AccessToken');
+        $this->getAccessToken()->shouldNotReturn($accessToken);
     }
+
+
 }
 
