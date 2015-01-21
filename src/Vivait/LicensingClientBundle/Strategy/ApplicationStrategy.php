@@ -3,7 +3,6 @@
 namespace Vivait\LicensingClientBundle\Strategy;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 use Vivait\LicensingClientBundle\Licensing\Api;
 
