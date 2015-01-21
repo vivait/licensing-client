@@ -1,0 +1,24 @@
+services:
+    vivait_licensing_guzzle:
+        class: GuzzleHttp\Client
+
+    vivait_licensing_client.licensing.api:
+        class: Vivait\LicensingClientBundle\Licensing\Api
+        arguments: [@vivait_licensing_guzzle, %vivait_licensing_client.base_url%, %vivait_licensing_client.application%, %vivait_licensing_client.debug%]
+
+    vivait_licensing_client.strategy.application:
+        class: Vivait\LicensingClientBundle\Strategy\ApplicationStrategy
+        arguments: [@doctrine.orm.default_entity_manager, @vivait_licensing_client.licensing.api, %vivait_licensing_client.client_id%, %vivait_licensing_client.client_secret%]
+
+    vivait_licensing_client.strategy.endpoint:
+        class: Vivait\LicensingClientBundle\Strategy\EndpointStrategy
+        arguments: [@doctrine.orm.default_entity_manager, @vivait_licensing_client.licensing.api, @request]
+        public: true
+        scope: request
+
+    vivait_licensing_client.request.listener:
+        class: Vivait\LicensingClientBundle\EventListener\ProtectEndpointListener
+        arguments: [@annotation_reader, @vivait_licensing_client.strategy.endpoint]
+        scope: request
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }

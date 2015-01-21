@@ -18,13 +18,29 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('vivait_licensing');
 
+        $rootNode = $treeBuilder->root('vivait_licensing_client');
         $rootNode
             ->children()
-                ->scalarNode('licensekey')->isRequired()->end()
+                ->scalarNode('client_id')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('client_secret')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('debug')
+                    ->defaultValue(false)
+                ->end()
+                ->scalarNode('app_name')
+                    ->cannotBeEmpty()
+                    ->isRequired()
+                ->end()
+                ->scalarNode('base_url')
+                    ->isRequired()
+                ->end()
             ->end()
         ;
+
 
         return $treeBuilder;
     }
