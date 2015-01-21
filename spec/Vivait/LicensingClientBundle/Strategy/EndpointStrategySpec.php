@@ -3,9 +3,7 @@
 namespace spec\Vivait\LicensingClientBundle\Strategy;
 
 use Doctrine\Common\Persistence\ObjectRepository;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use GuzzleHttp\ClientInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -24,7 +22,7 @@ class EndpointStrategySpec extends ObjectBehavior
 
     function let(Request $request, ClientInterface $guzzle, EntityManagerInterface $entityManager)
     {
-        $this->beConstructedWith($request, $guzzle, $entityManager, true, 'http://myapi.com/api/', 'myapp');
+        $this->beConstructedWith($request, $guzzle, $entityManager, 'http://myapi.com/api/', 'myapp', false);
     }
 
     function it_requires_an_access_token(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag)

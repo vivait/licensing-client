@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
+use Vivait\LicensingClientBundle\Licensing\Api;
 use Vivait\LicensingClientBundle\Strategy\EndpointStrategy;
 
 class TokenController extends Controller
@@ -19,16 +20,16 @@ class TokenController extends Controller
      */
     public function tokenAction(Request $request)
     {
-        /** @var EndpointStrategy $endpointStrategy */
-        $endpointStrategy = $this->get('vivait_licensing_client.strategy.endpoint');
+        /** @var Api $licensingApi */
+        $licensingApi = $this->get('vivait_licensing_client.licensing.api');
 
         try {
-            $tokenData = $endpointStrategy->getToken(
+            $tokenData = $licensingApi->getToken(
                 $request->query->get('client_id', null),
                 $request->query->get('client_secret', null),
                 $request->query->get('grant_type', 'client_credentials')
             );
-            $clientData = $endpointStrategy->getClient($tokenData['access_token']);
+            $clientData = $licensingApi->getClient($tokenData['access_token']);
 
         } catch (HttpException $e) {
             return new JsonResponse(json_decode($e->getMessage()), $e->getStatusCode());

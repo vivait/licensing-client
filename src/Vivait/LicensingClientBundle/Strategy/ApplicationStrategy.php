@@ -3,46 +3,53 @@
 namespace Vivait\LicensingClientBundle\Strategy;
 
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
+use Vivait\LicensingClientBundle\Licensing\Api;
 
-class ApplicationStrategy extends AbstractStrategy
+class ApplicationStrategy implements StrategyInterface
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
+
+    /**
+     * @var AccessToken
+     */
+    protected $accessToken;
+    /**
+     * @var Api
+     */
+    protected $api;
+    /**
+     * @var
+     */
+    private $clientSecret;
     /**
      * @var
      */
     private $clientId;
 
     /**
-     * @var
-     */
-    private $clientSecret;
-
-    /**
-     * @param Request $request
-     * @param ClientInterface $guzzle
      * @param EntityManagerInterface $entityManagerInterface
-     * @param $debug
-     * @param $baseUrl
-     * @param $application
+     * @param Api $api
      * @param $clientId
      * @param $clientSecret
      */
-    public function __construct(Request $request, ClientInterface $guzzle, EntityManagerInterface $entityManagerInterface, $debug, $baseUrl, $application, $clientId, $clientSecret)
+    public function __construct(EntityManagerInterface $entityManagerInterface, Api $api, $clientId, $clientSecret)
     {
-        parent::__construct($request, $guzzle, $entityManagerInterface, $debug, $baseUrl, $application);
-        $this->clientId = $clientId;
+        $this->entityManager = $entityManagerInterface;
+        $this->api = $api;
         $this->clientSecret = $clientSecret;
+        $this->clientId = $clientId;
     }
-
 
     private function requestToken($clientId, $clientSecret)
     {
-        $tokenData = $this->getToken($clientId, $clientSecret);
+        $tokenData = $this->api->getToken($clientId, $clientSecret);
 
-        $this->getClient($tokenData['access_token']);
+        $this->api->getClient($tokenData['access_token']);
 
         $accessToken = new AccessToken();
 
@@ -62,7 +69,7 @@ class ApplicationStrategy extends AbstractStrategy
     public function authorize()
     {
         /** @var AccessToken $token */
-        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneBy(['client' => $this->clientId], ['expiresAt' => 'desc'], 1);
+        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneBy(['client' => $this->clientId], ['expiresAt' => 'desc']);
 
         if ($token) {
             if (!$token->hasExpired()) {
@@ -74,5 +81,13 @@ class ApplicationStrategy extends AbstractStrategy
         }
 
         $this->accessToken = $this->requestToken($this->clientId, $this->clientSecret);
+    }
+
+    /**
+     * @return AccessToken
+     */
+    public function getAccessToken()
+    {
+        return $this->accessToken;
     }
 }

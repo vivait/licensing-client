@@ -1,69 +1,45 @@
 <?php
 
-namespace Vivait\LicensingClientBundle\Strategy;
+namespace Vivait\LicensingClientBundle\Licensing;
 
-use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
-use Symfony\Component\HttpFoundation\Request;
+use HttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Vivait\LicensingClientBundle\Entity\AccessToken;
 
-abstract class AbstractStrategy
+class Api
 {
     /**
-     * @var Request
+     * @var ClientInterface
      */
-    protected $request;
+    private $guzzle;
+    private $baseUrl;
+    private $application;
+    /**
+     * @var bool
+     */
+    private $debug;
 
     /**
-     * @var Client
-     */
-    protected $guzzle;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager;
-    protected $application;
-    protected $baseUrl;
-
-    /**
-     * @var AccessToken
-     */
-    protected $accessToken;
-    protected $debug;
-
-    /**
-     * @param Request $request
      * @param ClientInterface $guzzle
-     * @param EntityManagerInterface $entityManagerInterface
-     * @param $debug
-     * @param $baseUrl
-     * @param $application
+     * @param string $baseUrl
+     * @param string $application
+     * @param bool $debug
      */
-    public function __construct(Request $request, ClientInterface $guzzle, EntityManagerInterface $entityManagerInterface, $debug = false, $baseUrl, $application)
+    public function __construct(ClientInterface $guzzle, $baseUrl, $application, $debug = false)
     {
-        $this->request = $request;
         $this->guzzle = $guzzle;
-        $this->entityManager = $entityManagerInterface;
-        $this->application = $application;
         $this->baseUrl = $baseUrl;
+        $this->application = $application;
         $this->debug = $debug;
     }
 
     /**
-     * @return boolean
-     */
-    abstract public function authorize();
-
-    /**
-     * @param $clientId
-     * @param $clientSecret
-     * @param $grantType
+     * @param string $clientId
+     * @param string $clientSecret
+     * @param string $grantType
      * @return array
+     * @throws HttpException
      */
     public function getToken($clientId, $clientSecret, $grantType = 'client_credentials')
     {
@@ -71,19 +47,16 @@ abstract class AbstractStrategy
             return $this->getDebugToken();
         }
 
-        $tokenRequest = $this->guzzle->createRequest("GET", $this->baseUrl . 'oauth/token', [
-            'query' => [
-                'client_id' => $clientId,
-                'client_secret' => $clientSecret,
-                'grant_type' => $grantType
-            ]
-        ]);
-
         try {
-            $tokenData = $this->guzzle->send($tokenRequest);
+            $tokenData = $this->guzzle->get($this->baseUrl . 'oauth/token', [
+                'query' => [
+                    'client_id' => $clientId,
+                    'client_secret' => $clientSecret,
+                    'grant_type' => $grantType
+                ]
+            ]);
         } catch (ClientException $e) {
-            $tokenData = $e->getResponse();
-            throw new HttpException($tokenData->getStatusCode(), $tokenData->getBody()->getContents());
+            throw new HttpException($e->getResponse()->getStatusCode(), $e->getResponse()->getBody()->getContents());
         }
 
         if (
@@ -97,43 +70,50 @@ abstract class AbstractStrategy
     }
 
     /**
-     * @param $accessToken
+     * @param string $accessToken
      * @return array|\GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Ring\Future\FutureInterface|mixed
+     * @throws HttpException
      */
     public function getClient($accessToken)
     {
         if ($this->debug) {
             return $this->getDebugClient();
         }
-
-        $clientRequest = $this->guzzle->createRequest("POST", $this->baseUrl . 'check', [
-            'body' => ['application' => $this->application],
-            'headers', ['Authorization' => 'Bearer ' . $accessToken]
-        ]);
-
         try {
-            $clientData = $this->guzzle->send($clientRequest);
+            $clientData = $this->guzzle->post($this->baseUrl . 'check', [
+                'body' => [
+                    'application' => $this->application,
+                    'access_token' => $accessToken,
+                ],
+            ]);
         } catch (ClientException $e) {
             throw new HttpException($e->getResponse()->getStatusCode(), $e->getResponse()->getBody()->getContents());
         }
 
-        $clientData = $clientData->json();
         if (
-            !array_key_exists("publicId", $clientData) ||
-            !array_key_exists("secret", $clientData)
+            !array_key_exists("publicId", $clientData->json()) ||
+            !array_key_exists("secret", $clientData->json())
         ) {
             throw new BadRequestHttpException(json_encode(["error" => "invalid_client", "error_description" => "The client credentials are invalid"]));
         }
 
-        return $clientData;
+        return $clientData->json();
     }
 
     /**
-     * @return AccessToken
+     * @return mixed
      */
-    public function getAccessToken()
+    public function getApplication()
     {
-        return $this->accessToken;
+        return $this->application;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
     }
 
     /**
@@ -172,21 +152,5 @@ abstract class AbstractStrategy
                 'email' => 'debug@transdoc.dev'
             ]
         ];
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getApplication()
-    {
-        return $this->application;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getBaseUrl()
-    {
-        return $this->baseUrl;
     }
 }
