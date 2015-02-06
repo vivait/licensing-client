@@ -30,6 +30,18 @@ class AccessToken
     protected $token;
 
     /**
+     * @ORM\Column(type="string")
+     * @Type("string")
+     */
+    protected $application;
+
+    /**
+     * @ORM\Column(type="array")
+     * @Type("array")
+     */
+    protected $roles;
+
+    /**
      * @var \DateTime
      * @ORM\Column(type="datetime")
      */
@@ -119,5 +131,50 @@ class AccessToken
     public function getClient()
     {
         return $this->client;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+
+    /**
+     * @param mixed $application
+     * @return $this
+     */
+    public function setApplication($application)
+    {
+        $this->application = $application;
+        return $this;
+    }
+
+    public function hasRole($role)
+    {
+        if($this->getRoles()){
+            return in_array(strtoupper($role), $this->getRoles(), true);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRoles()
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param array $roles
+     * @return $this
+     */
+    public function setRoles(array $roles)
+    {
+        $this->roles = $roles;
+        return $this;
     }
 }
