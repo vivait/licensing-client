@@ -41,12 +41,15 @@ class TokenController extends Controller
             ->setToken($tokenData['access_token'])
             ->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])))
             ->setClient($clientData['publicId'])
+            ->setApplication($clientData['application']['name'])
+            ->setRoles($clientData['user']['roles'])
         ;
 
         $em = $this->getDoctrine()->getManager();
 
         $em->persist($accessToken);
         $em->flush();
+
 
         return new JsonResponse($tokenData);
     }
