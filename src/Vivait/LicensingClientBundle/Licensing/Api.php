@@ -7,13 +7,15 @@ use GuzzleHttp\Exception\ClientException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class Api
+class Api implements ApiAuthenticationInterface
 {
     /**
      * @var ClientInterface
      */
     private $guzzle;
+
     private $baseUrl;
+
     private $application;
 
 
@@ -29,13 +31,6 @@ class Api
         $this->application = $application;
     }
 
-    /**
-     * @param string $clientId
-     * @param string $clientSecret
-     * @param string $grantType
-     * @return array
-     * @throws HttpException
-     */
     public function getToken($clientId, $clientSecret, $grantType = 'client_credentials')
     {
         try {
@@ -60,11 +55,6 @@ class Api
         return $tokenData->json();
     }
 
-    /**
-     * @param string $accessToken
-     * @return array|\GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Ring\Future\FutureInterface|mixed
-     * @throws HttpException
-     */
     public function getClient($accessToken)
     {
         try {
@@ -80,7 +70,8 @@ class Api
 
         if (
             !array_key_exists("publicId", $clientData->json()) ||
-            !array_key_exists("secret", $clientData->json())
+            !array_key_exists("secret", $clientData->json()) ||
+            !array_key_exists("application", $clientData->json())
         ) {
             throw new BadRequestHttpException(json_encode(["error" => "invalid_client", "error_description" => "The client credentials are invalid"]));
         }

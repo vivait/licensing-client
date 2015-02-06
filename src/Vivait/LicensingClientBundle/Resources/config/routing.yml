@@ -1,4 +1,4 @@
-viait_licenging_auth_token:
+viait_licencing_auth_token:
     pattern:  /oauth/token
     defaults: { _controller: VivaitLicensingClientBundle:Token:token, _format: json }
     requirements:
