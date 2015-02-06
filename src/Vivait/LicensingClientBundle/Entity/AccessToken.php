@@ -172,8 +172,12 @@ class AccessToken
      * @param array $roles
      * @return $this
      */
-    public function setRoles(array $roles)
+    public function setRoles($roles = [])
     {
+        if(!is_array($roles)){
+            $roles = (array) $roles;
+        }
+
         $this->roles = $roles;
         return $this;
     }
