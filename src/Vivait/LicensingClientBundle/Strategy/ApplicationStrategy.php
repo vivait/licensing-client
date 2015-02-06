@@ -5,6 +5,7 @@ namespace Vivait\LicensingClientBundle\Strategy;
 use Doctrine\ORM\EntityManagerInterface;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 use Vivait\LicensingClientBundle\Licensing\Api;
+use Vivait\LicensingClientBundle\Licensing\ApiAuthenticationInterface;
 
 class ApplicationStrategy implements StrategyInterface
 {
@@ -17,14 +18,17 @@ class ApplicationStrategy implements StrategyInterface
      * @var AccessToken
      */
     protected $accessToken;
+
     /**
-     * @var Api
+     * @var ApiAuthenticationInterface
      */
     protected $api;
+
     /**
      * @var
      */
     private $clientSecret;
+
     /**
      * @var
      */
@@ -32,11 +36,11 @@ class ApplicationStrategy implements StrategyInterface
 
     /**
      * @param EntityManagerInterface $entityManagerInterface
-     * @param Api $api
+     * @param ApiAuthenticationInterface $api
      * @param $clientId
      * @param $clientSecret
      */
-    public function __construct(EntityManagerInterface $entityManagerInterface, Api $api, $clientId, $clientSecret)
+    public function __construct(EntityManagerInterface $entityManagerInterface, ApiAuthenticationInterface $api, $clientId, $clientSecret)
     {
         $this->entityManager = $entityManagerInterface;
         $this->api = $api;
@@ -48,14 +52,17 @@ class ApplicationStrategy implements StrategyInterface
     {
         $tokenData = $this->api->getToken($clientId, $clientSecret);
 
-        $this->api->getClient($tokenData['access_token']);
+        $clientData = $this->api->getClient($tokenData['access_token']);
 
         $accessToken = new AccessToken();
 
         $accessToken
             ->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])))
             ->setToken($tokenData['access_token'])
-            ->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret));
+            ->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret))
+            ->setApplication($clientData['application']['name'])
+            ->setRoles($clientData['user']['roles'])
+        ;
 
         $em = $this->entityManager;
 

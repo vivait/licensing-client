@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
-use Vivait\LicensingClientBundle\Licensing\Api;
+use Vivait\LicensingClientBundle\Licensing\ApiAuthenticationInterface;
 
 class EndpointStrategy implements StrategyInterface
 {
@@ -25,16 +25,15 @@ class EndpointStrategy implements StrategyInterface
      */
     protected $accessToken;
     /**
-     * @var Api
+     * @var ApiAuthenticationInterface
      */
     protected $api;
-
     /**
-     * @param Request $request
      * @param EntityManagerInterface $entityManagerInterface
-     * @param Api $api
+     * @param ApiAuthenticationInterface $api
+     * @param Request $request
      */
-    public function __construct(EntityManagerInterface $entityManagerInterface, Api $api, Request $request)
+    public function __construct(EntityManagerInterface $entityManagerInterface, ApiAuthenticationInterface $api, Request $request)
     {
         $this->request = $request;
         $this->entityManager = $entityManagerInterface;
@@ -56,6 +55,7 @@ class EndpointStrategy implements StrategyInterface
                     "error" => "access_denied",
                     "error_description" => "OAuth2 authentication required"
                 ]
+
             )
             );
         }
