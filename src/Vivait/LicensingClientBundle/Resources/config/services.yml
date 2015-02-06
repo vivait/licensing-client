@@ -4,7 +4,7 @@ services:
 
     vivait_licensing_client.licensing.api:
         class: Vivait\LicensingClientBundle\Licensing\Api
-        arguments: [@vivait_licensing_guzzle, %vivait_licensing_client.base_url%, %vivait_licensing_client.application%, %vivait_licensing_client.debug%]
+        arguments: [@vivait_licensing_guzzle, %vivait_licensing_client.base_url%, %vivait_licensing_client.application%]
 
     vivait_licensing_client.strategy.application:
         class: Vivait\LicensingClientBundle\Strategy\ApplicationStrategy
