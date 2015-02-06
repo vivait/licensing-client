@@ -48,14 +48,17 @@ class ApplicationStrategy implements StrategyInterface
     {
         $tokenData = $this->api->getToken($clientId, $clientSecret);
 
-        $this->api->getClient($tokenData['access_token']);
+        $clientData = $this->api->getClient($tokenData['access_token']);
 
         $accessToken = new AccessToken();
 
         $accessToken
             ->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])))
             ->setToken($tokenData['access_token'])
-            ->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret));
+            ->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret))
+            ->setApplication($clientData['application']['name'])
+            ->setRoles($clientData['user']['roles'])
+        ;
 
         $em = $this->entityManager;
 
