@@ -34,8 +34,8 @@ class Api implements ApiAuthenticationInterface
     public function getToken($clientId, $clientSecret, $grantType = 'client_credentials')
     {
         try {
-            $tokenData = $this->guzzle->get($this->baseUrl . 'oauth/token', [
-                'query' => [
+            $tokenData = $this->guzzle->post($this->baseUrl . 'oauth/token', [
+                'body' => [
                     'client_id' => $clientId,
                     'client_secret' => $clientSecret,
                     'grant_type' => $grantType

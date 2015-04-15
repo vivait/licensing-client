@@ -27,8 +27,8 @@ class ApiSpec extends ObjectBehavior
         $response = new Response(401);
         $response->setBody(Stream::factory("{}"));
 
-        $client->get('http://myapi.com/api/oauth/token',  [
-            'query' => [
+        $client->post('http://myapi.com/api/oauth/token',  [
+            'body' => [
                 'client_id' => 'myid',
                 'client_secret' => 'incorrectsecret',
                 'grant_type' => 'client_credentials'
@@ -52,8 +52,8 @@ class ApiSpec extends ObjectBehavior
         $response = new Response(200);
         $response->setBody(Stream::factory(json_encode($expected)));
 
-        $client->get('http://myapi.com/api/oauth/token',  [
-            'query' => [
+        $client->post('http://myapi.com/api/oauth/token',  [
+            'body' => [
                 'client_id' => 'myid',
                 'client_secret' => 'mysecret',
                 'grant_type' => 'client_credentials'
