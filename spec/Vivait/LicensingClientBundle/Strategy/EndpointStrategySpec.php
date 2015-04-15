@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 use Vivait\LicensingClientBundle\Licensing\Api;
+use Vivait\LicensingClientBundle\Repository\AccessTokenRepository;
 
 class EndpointStrategySpec extends ObjectBehavior
 {
@@ -44,7 +45,7 @@ class EndpointStrategySpec extends ObjectBehavior
         ])))->duringAuthorize();
     }
 
-    function it_can_get_an_access_token_from_query(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_can_get_an_access_token_from_query(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $headerBag->has('authorization')->willReturn(false);
         $request->headers = $headerBag;
@@ -59,7 +60,7 @@ class EndpointStrategySpec extends ObjectBehavior
 
         $accessToken = new AccessToken();
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($repository);
-        $repository->findOneBy(['token' => 'myauthcode'])->willReturn($accessToken);
+        $repository->findNewestByToken('myauthcode')->willReturn($accessToken);
 
         $this->shouldNotThrow(new HttpException(401, json_encode([
             "error" => "access_denied",
@@ -69,7 +70,7 @@ class EndpointStrategySpec extends ObjectBehavior
         $this->authorize();
     }
 
-    function it_can_get_an_access_token_from_request(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_can_get_an_access_token_from_request(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $token = 'myauthcode';
 
@@ -86,7 +87,7 @@ class EndpointStrategySpec extends ObjectBehavior
 
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($repository);
         $accessToken = new AccessToken();
-        $repository->findOneBy(['token' => $token])->willReturn($accessToken);
+        $repository->findNewestByToken($token)->willReturn($accessToken);
 
         $this->shouldNotThrow(new HttpException(401, json_encode([
             "error" => "access_denied",
@@ -96,7 +97,7 @@ class EndpointStrategySpec extends ObjectBehavior
         $this->authorize();
     }
 
-    function it_can_get_an_access_token_from_header(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_can_get_an_access_token_from_header(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $headerBag->has('authorization')->willReturn(true);
         $headerBag->get('authorization')->willReturn('Bearer myauthcode');
@@ -111,7 +112,7 @@ class EndpointStrategySpec extends ObjectBehavior
 
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($repository);
         $accessToken = new AccessToken();
-        $repository->findOneBy(['token' => 'myauthcode'])->willReturn($accessToken);
+        $repository->findNewestByToken('myauthcode')->willReturn($accessToken);
 
         $this->shouldNotThrow(new HttpException(401, json_encode([
             "error" => "access_denied",
@@ -121,7 +122,7 @@ class EndpointStrategySpec extends ObjectBehavior
         $this->authorize();
     }
 
-    function it_errors_if_auth_header_in_wrong_format(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_errors_if_auth_header_in_wrong_format(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $attempts = ['myauthcode', 'Bear myauthcode', 'Barer myauthcode', 'Bearer', 'Cactus myauthcode'];
 
@@ -143,7 +144,7 @@ class EndpointStrategySpec extends ObjectBehavior
         }
     }
 
-    function it_can_provide_an_access_token(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_can_provide_an_access_token(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $headerBag->has('authorization')->willReturn(true);
         $headerBag->get('authorization')->willReturn('Bearer myauthcode');
@@ -158,14 +159,14 @@ class EndpointStrategySpec extends ObjectBehavior
 
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($repository);
         $accessToken = new AccessToken();
-        $repository->findOneBy(['token' => 'myauthcode'])->willReturn($accessToken);
+        $repository->findNewestByToken('myauthcode')->willReturn($accessToken);
 
         $this->authorize();
 
         $this->getAccessToken()->shouldReturn($accessToken);
     }
 
-    function it_throws_an_exception_if_token_expired(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_throws_an_exception_if_token_expired(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $headerBag->has('authorization')->willReturn(true);
         $headerBag->get('authorization')->willReturn('Bearer myauthcode');
@@ -183,14 +184,14 @@ class EndpointStrategySpec extends ObjectBehavior
 
         $accessToken->setExpiresAt(new \DateTime('yesterday'));
 
-        $repository->findOneBy(['token' => 'myauthcode'])->willReturn($accessToken);
+        $repository->findNewestByToken('myauthcode')->willReturn($accessToken);
 
 
         $this->shouldThrow(new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided has expired."])))->duringAuthorize();
     }
 
 
-    function it_throws_an_exception_if_token_doesnt_exist(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, ObjectRepository $repository)
+    function it_throws_an_exception_if_token_doesnt_exist(Request $request, HeaderBag $headerBag, ParameterBag $requestBag, ParameterBag $queryBag, EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
         $headerBag->has('authorization')->willReturn(true);
         $headerBag->get('authorization')->willReturn('Bearer myauthcode');
@@ -205,9 +206,7 @@ class EndpointStrategySpec extends ObjectBehavior
 
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($repository);
 
-
-        $repository->findOneBy(['token' => 'myauthcode'])->willReturn(null);
-
+        $repository->findNewestByToken('myauthcode')->willReturn(null);
 
         $this->shouldThrow(new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided is invalid."])))->duringAuthorize();
     }
