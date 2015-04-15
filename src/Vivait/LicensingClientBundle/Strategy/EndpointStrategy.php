@@ -61,13 +61,11 @@ class EndpointStrategy implements StrategyInterface
         }
 
         /** @var AccessToken $tokenObject */
-        $tokenObject = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findBy(['token' => $token], ['expiresAt' => 'desc']);
+        $tokenObject = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findNewestByToken($token);
 
         if (!$tokenObject) {
             throw new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided is invalid."]));
         }
-
-        $tokenObject = $tokenObject[0];
 
         if ($tokenObject->hasExpired()) {
             throw new HttpException(401, json_encode(["error" => "invalid_grant", "error_description" => "The access token provided has expired."]));

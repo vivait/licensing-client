@@ -59,7 +59,8 @@ class ApplicationStrategy implements StrategyInterface
         $accessToken
             ->setExpiresAt(new \DateTime(sprintf('+%d seconds', $tokenData['expires_in'])))
             ->setToken($tokenData['access_token'])
-            ->setClient(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret))
+            ->setClient($clientId)
+            ->setHash(hash_hmac("sha256", serialize(['client' => $clientId, 'expires_at' => $accessToken->getExpiresAt()]), $clientSecret))
             ->setApplication($clientData['application']['name'])
             ->setRoles($clientData['user']['roles'])
         ;
@@ -75,11 +76,11 @@ class ApplicationStrategy implements StrategyInterface
     public function authorize()
     {
         /** @var AccessToken $token */
-        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findOneBy(['client' => $this->clientId], ['expiresAt' => 'desc']);
+        $token = $this->entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->findNewestByClient($this->clientId);
 
         if ($token) {
             if (!$token->hasExpired()) {
-                if ($token->getClient() == hash_hmac("sha256", serialize(['client' => $this->clientId, 'expires_at' => $token->getExpiresAt()]), $this->clientSecret)) {
+                if ($token->getHash() == hash_hmac("sha256", serialize(['client' => $this->clientId, 'expires_at' => $token->getExpiresAt()]), $this->clientSecret)) {
                     $this->accessToken = $token;
                     return;
                 }

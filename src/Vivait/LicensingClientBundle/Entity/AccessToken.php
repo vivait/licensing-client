@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Type;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Vivait\LicensingClientBundle\Repository\AccessTokenRepository")
  */
 class AccessToken
 {
@@ -46,6 +46,13 @@ class AccessToken
      * @ORM\Column(type="datetime")
      */
     protected $expiresAt;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     * @Type("string")
+     */
+    protected $hash;
+
 
     /**
      * @return mixed
@@ -179,6 +186,23 @@ class AccessToken
         }
 
         $this->roles = $roles;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHash()
+    {
+        return $this->hash;
+    }
+
+    /**
+     * @param mixed $hash
+     */
+    public function setHash($hash)
+    {
+        $this->hash = $hash;
         return $this;
     }
 }
