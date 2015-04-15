@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Vivait\LicensingClientBundle\Entity\AccessToken;
 use Vivait\LicensingClientBundle\Licensing\Api;
+use Vivait\LicensingClientBundle\Repository\AccessTokenRepository;
 
 class ApplicationStrategySpec extends ObjectBehavior
 {
@@ -26,37 +27,36 @@ class ApplicationStrategySpec extends ObjectBehavior
         $this->beConstructedWith($entityManager, $api, 'myid', 'mysecret');
     }
 
-    function it_can_authorise_the_application(EntityManagerInterface $entityManager, ObjectRepository $objectRepository)
+    function it_can_authorise_the_application(EntityManagerInterface $entityManager, AccessTokenRepository $objectRepository)
     {
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
 
         $accessToken = new AccessToken();
         $accessToken->setExpiresAt(new \DateTime('tomorrow'));
-        $accessToken->setClient(hash_hmac("sha256", serialize(['client' => 'myid', 'expires_at' => $accessToken->getExpiresAt()]), 'mysecret'));
+        $accessToken->setHash(hash_hmac("sha256", serialize(['client' => 'myid', 'expires_at' => $accessToken->getExpiresAt()]), 'mysecret'));
 
-        $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn($accessToken);
+        $objectRepository->findNewestByClient('myid')->willReturn($accessToken);
 
         $this->authorize();
     }
 
-    function it_can_get_an_access_token(EntityManagerInterface $entityManager, ObjectRepository $objectRepository)
+    function it_can_get_an_access_token(EntityManagerInterface $entityManager, AccessTokenRepository $objectRepository)
     {
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
 
         $accessToken = new AccessToken();
         $accessToken->setExpiresAt(new \DateTime('tomorrow'));
-        $accessToken->setClient(hash_hmac("sha256", serialize(['client' => 'myid', 'expires_at' => $accessToken->getExpiresAt()]), 'mysecret'));
+        $accessToken->setHash(hash_hmac("sha256", serialize(['client' => 'myid', 'expires_at' => $accessToken->getExpiresAt()]), 'mysecret'));
 
-        $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn($accessToken);
-
+        $objectRepository->findNewestByClient('myid')->willReturn($accessToken);
         $this->authorize();
         $this->getAccessToken()->shouldReturn($accessToken);
     }
 
-    function it_creates_a_new_token_if_none_exist(Api $api, EntityManagerInterface $entityManager, ObjectRepository $objectRepository)
+    function it_creates_a_new_token_if_none_exist(Api $api, EntityManagerInterface $entityManager, AccessTokenRepository $objectRepository)
     {
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
-        $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn(null);
+        $objectRepository->findNewestByClient('myid')->willReturn(null);
 
         /** @noinspection PhpVoidFunctionResultUsedInspection */
         $entityManager->persist(Argument::any())->shouldBeCalled();
@@ -68,14 +68,14 @@ class ApplicationStrategySpec extends ObjectBehavior
         $this->getAccessToken()->shouldHaveType('Vivait\LicensingClientBundle\Entity\AccessToken');
     }
 
-    function it_creates_a_new_token_if_its_expired(Api $api, EntityManagerInterface $entityManager, ObjectRepository $objectRepository, AccessToken $newAccessToken)
+    function it_creates_a_new_token_if_its_expired(Api $api, EntityManagerInterface $entityManager, AccessTokenRepository $objectRepository, AccessToken $newAccessToken)
     {
         $entityManager->getRepository('VivaitLicensingClientBundle:AccessToken')->willReturn($objectRepository);
 
         $accessToken = new AccessToken();
         $accessToken->setExpiresAt(new \DateTime('yesterday'));
 
-        $objectRepository->findOneBy(['client' => 'myid'], ['expiresAt' => 'desc'])->willReturn($accessToken);
+        $objectRepository->findNewestByClient('myid')->willReturn($accessToken)->willReturn($accessToken);
 
         /** @noinspection PhpVoidFunctionResultUsedInspection */
         $entityManager->persist(Argument::any())->shouldBeCalled();
