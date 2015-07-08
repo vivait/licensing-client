@@ -25,19 +25,17 @@ class TokenController extends Controller
 
         try {
             if($request->getMethod() == 'POST') {
-                $tokenData = $licensingApi->getToken(
-                    $request->request->get('client_id', null),
-                    $request->request->get('client_secret', null),
-                    $request->request->get('grant_type', 'client_credentials')
-                );
+                $parameters = $request->request;
             } else {
-                $tokenData = $licensingApi->getToken(
-                    $request->query->get('client_id', null),
-                    $request->query->get('client_secret', null),
-                    $request->query->get('grant_type', 'client_credentials')
-                );
-     
+                $parameters = $request->query;
             }
+
+            $tokenData = $licensingApi->getToken(
+                $parameters->get('client_id', null),
+                $parameters->get('client_secret', null),
+                $parameters->get('grant_type', 'client_credentials')
+            );
+            
             $clientData = $licensingApi->getClient($tokenData['access_token']);
 
         } catch (HttpException $e) {
