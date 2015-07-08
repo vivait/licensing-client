@@ -2,4 +2,4 @@ viait_licencing_auth_token:
     pattern:  /oauth/token
     defaults: { _controller: VivaitLicensingClientBundle:Token:token, _format: json }
     requirements:
-        _method: GET
+        _method: GET|POST
