@@ -25,9 +25,9 @@ class TokenController extends Controller
 
         try {
             $tokenData = $licensingApi->getToken(
-                $request->query->get('client_id', null),
-                $request->query->get('client_secret', null),
-                $request->query->get('grant_type', 'client_credentials')
+                $request->request->get('client_id', $request->query->get('client_id', null)),
+                $request->request->get('client_secret', $request->query->get('client_secret', null)),
+                $request->request->get('grant_type', $request->query->get('grant_type', 'client_credentials')),
             );
             $clientData = $licensingApi->getClient($tokenData['access_token']);
 
