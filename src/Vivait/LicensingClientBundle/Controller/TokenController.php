@@ -24,11 +24,18 @@ class TokenController extends Controller
         $licensingApi = $this->get('vivait_licensing_client.licensing.api');
 
         try {
+            if($request->getMethod() == 'POST') {
+                $parameters = $request->request;
+            } else {
+                $parameters = $request->query;
+            }
+
             $tokenData = $licensingApi->getToken(
-                $request->query->get('client_id', null),
-                $request->query->get('client_secret', null),
-                $request->query->get('grant_type', 'client_credentials')
+                $parameters->get('client_id', null),
+                $parameters->get('client_secret', null),
+                $parameters->get('grant_type', 'client_credentials')
             );
+            
             $clientData = $licensingApi->getClient($tokenData['access_token']);
 
         } catch (HttpException $e) {
